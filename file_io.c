@@ -72,7 +72,7 @@ bool search_in_file(const char* filename, const char* target) {
     while (fgets(line, sizeof(line), file)) {
         // strstr returns NULL if the target is not in the current line
         if (strstr(line, target) != NULL) {
-            printf("Found '%s' at line %d: %s", target, line_number, line);
+            // printf("Found '%s' at line %d: %s", target, line_number, line);
             found = true;
         }
         line_number++;
@@ -82,26 +82,86 @@ bool search_in_file(const char* filename, const char* target) {
     return found;
 }
 
-int main(){
-    // Example usage for the file interaction functions above 
-    char test[100] = "Example text to populate file and enable testing of functions";
-    char filename[10] = "test.txt";
-    char target[20] = "file";
-
-    if(write_to_file(filename, test)){
-        printf("Successful\n");
+char* search_string(const char* filename, const char* target) {
+    FILE* file = fopen(filename, "r");
+    if (file == NULL) {
+        perror("Could not open file for searching");
+        return false;
     }
 
-    if(search_in_file(filename, target)){
-        printf("Target found in file");
+    char line[MAX_LINE_LENGTH];
+    char* result = NULL;
+
+    while (fgets(line, sizeof(line), file)) {
+        if (strstr(line, target) != NULL) {
+            result = malloc(strlen(line) + 1);
+            if (result != NULL) {
+                strcpy(result, line);
+            }
+            break; 
+        }
     }
 
-    char *content = read_from_file(filename);
-
-    if(content){
-        printf("File Content:\n%s\n", content);
-        free(content); // NOTE: Remember to free memory once content is read from file
-    }
-
-    return 0;
+    fclose(file);
+    return result;
 }
+
+void delete_all_lines_containing(char *filename, char *target) {
+    FILE *file, *temp;
+    char line[256];
+
+    file = fopen(filename, "r");
+    temp = fopen("temp.txt", "w");
+
+    if (file == NULL || temp == NULL) {
+        printf("Error opening file.\n");
+        return;
+    }
+
+    while (fgets(line, sizeof(line), file) != NULL) {
+        if (strstr(line, target) == NULL) {  
+            // write line only if target string is NOT found
+            fputs(line, temp);
+        }
+    }
+
+    fclose(file);
+    fclose(temp);
+
+    remove(filename);
+    rename("temp.txt", filename);
+}
+
+// int main(){
+//     // Example usage for the file interaction functions above 
+//     char test[100] = "Example text to populate file and enable testing of functions";
+//     char filename[10] = "test.txt";
+//     char target[50] = "jpuj08ljoh0";
+
+    // if(write_to_file(filename, test)){
+    //     printf("Successful\n");
+    // }
+
+    // if(search_in_file(filename, target)){
+    //     printf("Target found in file");
+    // }
+
+    // char* result = search_string(filename, target);
+
+    // if(result){
+    //     printf("%s", result);
+    //     free(result); // Remember to free memory once content is read from file
+    // }
+
+
+    // char* content = read_from_file(filename);
+
+    // if(content){
+    //     printf("File Content:\n%s\n", content);
+    //     free(content); // Remember to free memory once content is read from file
+    // }
+
+//     delete_all_lines_containing(filename, target);
+
+//     return 0;
+// }
