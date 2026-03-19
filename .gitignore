@@ -1,4 +1,11 @@
+# 
 .vscode
 .idea
 *.exe
 *.txt
+
+# Ignore build directory with compilation results 
+build/
+
+# Track CMakeLists file for efficient compilation of programs
+!CMakeLists.txt
