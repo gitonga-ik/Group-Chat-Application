@@ -8,7 +8,7 @@ server:
 # Compiles the client executable
 # make client
 client:
-	gcc client.c data_transfer.c -o client
+	gcc client_stub.c client.c data_transfer.c -o client
 
 # Deletes the client and server executables. Use when recompiling to get fresh executables
 # make clean

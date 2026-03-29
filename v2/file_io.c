@@ -3,29 +3,53 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "file_io.h"
 #define MAX_LINE_LENGTH 1024
+
+int tag(FILE *file){
+    int character;
+    int tag = 1;
+    int last_character = '\n';
+
+    while ((character = fgetc(file)) != EOF) {
+        if (character == '\n') {
+            tag++;
+        }
+        last_character = character;
+    }
+    
+    if (last_character != '\n') {
+        tag++;
+    }
+
+    return tag;
+}
 
 bool write_to_file(const char* filename, const char* content) {
     if (filename == NULL || content == NULL) {
         return false;
     }
 
-    // "a+" opens for writing; if file exists, the content is appended
-    // If the file does not exist, it is created and the content appended
     FILE* file = fopen(filename, "a+");
     if (file == NULL) {
         perror("Error opening file for writing");
         return false;
     }
 
-    // Write the content string to the file
-    int result = fputs(content, file);
+    int id = tag(file);
+    int buffer_size = snprintf(NULL, 0, "%d | %s", id, content);
+    
+    char *buffer = malloc(buffer_size + 1);
+    if (!buffer) return false;
+
+    snprintf(buffer, buffer_size + 1, "%d | %s", id, content);
+
+    int result = fputs(buffer, file);
     fprintf(file,"\n");
     
-    // Close the file to flush buffers
+    free(buffer);
     fclose(file);
 
-    // fputs returns a non-negative value on success
     return (result != EOF);
 }
 
@@ -105,7 +129,7 @@ char* search_string(const char* filename, const char* target) {
     return result;
 }
 
-void delete_all_lines_containing(char *filename, char *target) {
+void delete_all_lines_containing(const char *filename, const char *target) {
     FILE *file, *temp;
     char line[256];
 
@@ -119,7 +143,6 @@ void delete_all_lines_containing(char *filename, char *target) {
 
     while (fgets(line, sizeof(line), file) != NULL) {
         if (strstr(line, target) == NULL) {  
-            // write line only if target string is NOT found
             fputs(line, temp);
         }
     }
@@ -137,28 +160,28 @@ void delete_all_lines_containing(char *filename, char *target) {
 //     char filename[10] = "test.txt";
 //     char target[50] = "jpuj08ljoh0";
 
-    // if(write_to_file(filename, test)){
-    //     printf("Successful\n");
-    // }
+//     if(write_to_file(filename, test)){
+//         printf("Successful\n");
+//     }
 
-    // if(search_in_file(filename, target)){
-    //     printf("Target found in file");
-    // }
+//     if(search_in_file(filename, target)){
+//         printf("Target found in file");
+//     }
 
-    // char* result = search_string(filename, target);
+//     char* result = search_string(filename, target);
 
-    // if(result){
-    //     printf("%s", result);
-    //     free(result); // Remember to free memory once content is read from file
-    // }
+//     if(result){
+//         printf("%s", result);
+//         free(result); // Remember to free memory once content is read from file
+//     }
 
 
-    // char* content = read_from_file(filename);
+//     char* content = read_from_file(filename);
 
-    // if(content){
-    //     printf("File Content:\n%s\n", content);
-    //     free(content); // Remember to free memory once content is read from file
-    // }
+//     if(content){
+//         printf("File Content:\n%s\n", content);
+//         free(content); // Remember to free memory once content is read from file
+//     }
 
 //     delete_all_lines_containing(filename, target);
 

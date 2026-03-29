@@ -4,7 +4,7 @@
 #include <pthread.h>
 #include <signal.h>
 
-#include "server_stub.h"
+#include "server.h"
 
 volatile sig_atomic_t server_running = 1;
 int s_socket;
@@ -15,6 +15,7 @@ void handle_shutdown(int signal) {
 }
 
 int main(){
+    setvbuf(stdout, NULL, _IONBF, 0);
     signal(SIGINT, handle_shutdown);
 
     const ServerConfig server = server_init(9000);
@@ -36,7 +37,6 @@ int main(){
                 free(client_ptr);
                 continue;
             }
-
             pthread_detach(thread_id);
         }
     }

@@ -5,6 +5,16 @@
 #define INPUT_READY "<<INPUT_READY>>"
 
 /**
+ * Removes leading and trailing whitespace (spaces, newlines, and carriage returns).
+ * * NOTE: This function modifies the original string in place. It returns a pointer 
+ * to the first non-space character within the original buffer.
+ *
+ * - s -The string to be trimmed.
+ * Returns a pointer to the trimmed string, or NULL if input is NULL.
+ */
+char *trim(char *s);
+
+/**
  * Records a new message to the persistent storage and notifies the client.
  * * - Client_socket - Socket to send the confirmation message to.
  * - Username - The sender's name.
@@ -12,8 +22,7 @@
  * - Content - The actual text of the message.
  * - Parent_id - The ID of the message being replied to (0 if a new thread).
  */
-void send_message(int client_socket, const char *username,
-                  const char *group_id, const char *content, int parent_id);
+void send_message(int client_socket, const char *username, const char *group_id, const char *content, int parent_id);
 
 /**
  * Reads the message file, filters out messages for a specific group,

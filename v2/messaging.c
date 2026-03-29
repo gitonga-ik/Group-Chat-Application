@@ -10,6 +10,20 @@
 #define MESSAGES_FILE "messages.txt"
 #define INPUT_READY "<<INPUT_READY>>"
 
+char* trim(char *str) {
+    while (*str == ' ') str++;
+
+    if (*str == 0) return str;
+
+    char *end = str + strlen(str) - 1;
+    while (end > str && (*end == ' ' || *end == '\n' || *end == '\r')) {
+        *end = '\0';
+        end--;
+    }
+
+    return str;
+}
+
 void send_message(const int client_socket, const char *username,
                   const char *group_id, const char *content, const int parent_id) {
     char message_record[512];
@@ -20,10 +34,16 @@ void send_message(const int client_socket, const char *username,
     snprintf(message_record, sizeof(message_record), "%d|%s|%s|%s|%ld|%d",
              message_id, group_id, username, content, timestamp, parent_id);
 
-    write_to_file(MESSAGES_FILE, message_record);
+    FILE* file = fopen(MESSAGES_FILE, "a+");
+    if (file == NULL) {
+        perror("Error opening file for writing");
+        return;
+    }
 
-    const char *message = "Message sent.\n";
-    transfer_message(client_socket, message, strlen(message));
+    int result = fputs(message_record, file);
+    fprintf(file,"\n");
+    
+    fclose(file);
 }
 
 // Builds the full chat history of a given group as a string and sends it in one transfer
@@ -75,10 +95,8 @@ void display_messages(const int client_socket, const char *group_name) {
     transfer_message(client_socket, output, strlen(output));
 }
 
-void start_chat_session(const int client_socket,
-                        const char *username, const char *group_name) {
+void start_chat_session(const int client_socket, const char *username, const char *group_name) {
     while (1) {
-        // Send current chat history
         display_messages(client_socket, group_name);
 
         char prompt[256];
@@ -92,6 +110,12 @@ void start_chat_session(const int client_socket,
         if (input == NULL) break;
 
         if (strcmp(input, "leave") == 0) {
+            const char *msg = "Leaving chat...\n";
+            transfer_message(client_socket, msg, strlen(msg));
+
+            const char *exit_signal = "<<EXIT>>";
+            transfer_message(client_socket, exit_signal, strlen(exit_signal));
+
             free(input);
             break;
         }

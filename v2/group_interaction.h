@@ -17,7 +17,7 @@ void show_all_groups(int client_socket);
  * and adds the provided username to MEMBERSHIPS_FILE if not already present.
  * Returns true on success.
  */
-bool join_group(int client_socket, const char* username);
+bool join_group(int client_socket, const char* username, const char *group_name );
 
 /**
  * Searches MEMBERSHIPS_FILE and prints all records 
@@ -29,7 +29,7 @@ void show_user_groups(int client_socket, const char* target_user);
  * Searches MEMBERSHIPS_FILE and prints all users 
  * belonging to a specific group.
  */
-void show_group_members(int client_socket, const char* username);
+void show_group_members(int client_socket, const char* username, const char* group_name);
 
 /**
  * Searches through the GROUPS_FILE to determine whether the current
@@ -42,6 +42,6 @@ bool is_group_admin(const char* username, const char* group_name);
  * Removes the membership record for a specific user and group.
  * Returns true if the operation was successful.
  */
-bool leave_group(int client_socket, const char* username);
+bool leave_group(int client_socket, const char* username, const char *group_name);
 
 #endif // GROUP_INTERACTION_H

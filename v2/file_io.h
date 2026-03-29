@@ -33,6 +33,6 @@ char* search_string(const char* filename, const char* target);
  * Removes every line from the file that contains the specified target string.
  * Uses a temporary file to rewrite the content.
  */
-void delete_all_lines_containing(char *filename, char *target);
+void delete_all_lines_containing(const char *filename, const char *target);
 
 #endif // FILE_IO_H

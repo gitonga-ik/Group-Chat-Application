@@ -12,6 +12,6 @@
  * Returns true if matched and false if not
  * A pointer to where the username is stored is passed to allow reusability of the username
  */
-bool authenticate_user(int client_socket, char* username, size_t username_capacity);
+bool authenticate_user(int client_socket, char* username, char* user_ref);
 
 #endif // AUTHENTICATION_H

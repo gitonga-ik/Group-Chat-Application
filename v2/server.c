@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <stdbool.h>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -12,7 +13,7 @@
 #include "data_transfer.h"
 #include "group_dashboard.h"
 #include "registration.h"
-#include "server_stub.h"
+#include "server.h"
 
 #define INPUT_READY "<<INPUT_READY>>"
 
@@ -31,6 +32,12 @@ ServerConfig server_init(const int port) {
     // Check for successful creation
     if (server.server_socket < 0) {
         perror(("Could not initialize socket"));
+        exit(1);
+    }
+
+    const int opt = 1;
+    if (setsockopt(server.server_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
+        perror("setsockopt SO_REUSEADDR failed");
         exit(1);
     }
 
@@ -74,34 +81,49 @@ void* client_handler(void* client) {
     const int client_socket = *(int*)client;
     free(client);
 
-    while (1) {
-        const char *welcome_message = "\n--- WELCOME TO GROUP CHAT ---\n"
-                            "1. Login\n2. Register\n3. Exit\nSelection: ";
-        transfer_message(client_socket, welcome_message, strlen(welcome_message));
-        transfer_message(client_socket, INPUT_READY, strlen(INPUT_READY));
+    bool is_authenticated = false;
 
+    while (1) {
         char *response = receive_message(client_socket);
+        
         if (response == NULL) {
             printf("Client disconnected.\n");
             close(client_socket);
             return NULL;
         }
 
-        if (strcmp(response, "1") == 0) {
-            free(response);
+        char *operation  = strtok(response, "|");
+        char *user_record = strtok(NULL, "");
 
-            char current_user[256] = {0};
-            if (authenticate_user(client_socket, current_user, sizeof(current_user))) {
+        if (operation == NULL) {
+            free(response);
+            continue;
+        }
+
+        while (user_record && *user_record == ' ') user_record++;
+
+        if (strcmp(operation, "1") == 0) {
+            if (user_registration(client_socket, user_record)) {
+                char status = '1';
+                transfer_message(client_socket, &status, 1);
+            } else {
+                char status = '0';
+                transfer_message(client_socket, &status, 1);
+            }
+            free(response);
+        } else if (strcmp(operation, "2") == 0) {
+            char current_user[100] = {0};
+            if (authenticate_user(client_socket, user_record, current_user)) {
+                char status = '1';
+                transfer_message(client_socket, &status, 1);
+                free(response);
                 group_dashboard(client_socket, current_user);
             } else {
-                const char *message = "\nAuthentication failed.\n";
-                transfer_message(client_socket, message, strlen(message));
+                char status = '0';
+                transfer_message(client_socket, &status, 1);
+                free(response);
             }
-
-        } else if (strcmp(response, "2") == 0) {
-            free(response);
-            user_registration(client_socket);
-        } else if (strcmp(response, "3") == 0) {
+        } else if (strcmp(operation, "3") == 0) {
             free(response);
             const char *message = "Goodbye.\n";
             transfer_message(client_socket, message, strlen(message));
