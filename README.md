@@ -30,19 +30,6 @@ The connectionless counterpart to V3, utilizing **UDP datagrams**. It follows an
 
 ---
 
-## Future Roadmap
-
-The project will continue to expand into advanced concurrency models and networking patterns. Future versions will include:
-
-- **Concurrent Architectures:**
-  - **Thread-based:** Utilizing `pthreads` to handle multiple simultaneous client connections.
-  - **Process-based:** Using `fork()` and IPC for isolated client handling.
-  - **AsyncIO/Event-driven:** Implementing non-blocking I/O and multiplexing (e.g., `select`, `poll`, or `epoll`).
-- **Protocol Variants:**
-  - Each concurrent implementation will be provided in both **Connectionless (UDP)** and **Connection-oriented (TCP)** versions.
-
----
-
 ## Technical Stack
 - **Language:** C
 - **Networking:** BSD Sockets (TCP/UDP)
