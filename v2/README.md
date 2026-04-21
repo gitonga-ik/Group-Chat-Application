@@ -1,6 +1,6 @@
-# Group Chat System (V2)
+# Group Chat System (V2 - Local)
 
-A robust, multi-user group chat application built in C using TCP sockets. This project implements a server-driven UI model where the server handles all application logic and state, and the client acts as a thin terminal.
+A robust, multi-user group chat application built in C using TCP sockets. This project implements a server-driven UI model where the server handles all application logic and state, and the client acts as a thin terminal. It is configured for local machine communication only.
 
 ## 1. Project Overview
 
