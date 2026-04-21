@@ -4,7 +4,9 @@ This document describes the custom application layer protocol and data managemen
 
 ## 1. Communication Protocol
 
-The protocol is a **synchronous, server-driven, request-response** model built on top of **TCP**. The server manages the application state and renders the UI, while the client serves as a relay for display and user input.
+The protocol is a **stateful, hybrid request-response** model built on top of **TCP**. The application transitions between two modes:
+1. **Command Mode:** The client sends explicit operation codes or choices and waits for status replies (e.g., during login or dashboard navigation).
+2. **Relay Mode:** During active chat sessions, the server drives the UI by sending logs and prompts, utilizing a sentinel to request input.
 
 ### 1.1 Framing Layer
 To handle TCP's stream-oriented nature, the protocol uses **length-prefixed framing**.
@@ -15,9 +17,28 @@ To handle TCP's stream-oriented nature, the protocol uses **length-prefixed fram
 | **Payload** | Variable | `char[]` | The actual message content (ASCII/UTF-8 string). |
 
 ### 1.2 Control Flow
-- **Server Transmission:** The server sends UI elements, prompts, or logs.
-- **Input Sentinel:** When the server requires input, it sends `<<INPUT_READY>>`.
-- **Client Response:** Upon receiving the sentinel, the client waits for user input and sends it back as a length-prefixed message.
+- **Client-Initiated Commands:** Initial operations (Login/Register) and Dashboard selections are initiated by the client.
+- **Server-Driven Chat:** Upon entering a group chat, the server takes control of the UI flow.
+- **Input Sentinel:** When the server requires user text in relay mode, it sends `<<INPUT_READY>>`.
+- **Termination:** Connections are persistent but can be closed via explicit logout or client disconnection.
+
+### 1.3 Operation Set
+
+#### Primary Opcodes (Initial Menu)
+- `1|Username|Password` -> Register user
+- `2|Username|Password` -> Login user
+- `3` -> Exit application
+
+#### Dashboard Choices (Post-Login)
+Sent as single-character messages:
+- `1` -> Create Group
+- `2` -> Join Group
+- `3` -> Show joined groups
+- `4` -> Show group members
+- `5` -> Delete group
+- `6` -> Leave group
+- `7` -> Enter Chat (Starts Relay Mode)
+- `8` -> Logout
 
 ## 2. Data Storage & Formats
 
@@ -28,7 +49,7 @@ Most files are managed via `file_io.c`, which automatically calculates a line-ba
 
 | File | Format | Source | Destination |
 | :--- | :--- | :--- | :--- |
-| `users.txt` | `ID | Username | HashedPassword` | `registration.c` | `authentication.c` |
+| `users.txt` | `ID | Username | HashedPassword (Hex)` | `registration.c` | `authentication.c` |
 | `groups.txt` | `ID | AdminUsername | GroupName` | `registration.c` | `group_interaction.c` |
 | `memberships.txt` | `ID | Username | GroupName` | `group_interaction.c` | `group_interaction.c` |
 
@@ -47,7 +68,7 @@ The `messages.txt` file uses a custom schema managed directly in `messaging.c`.
 ## 3. Security & Logic
 
 ### 3.1 Authentication
-Passwords are never stored in plain text. They are hashed using the **djb2** algorithm (found in `registration.c`).
+Passwords are never stored in plain text. They are hashed using the **djb2** algorithm (found in `registration.c`) and stored in **hexadecimal** format (`%lx`).
 
 ### 3.2 Authorization
 - **Admins:** The user who creates a group is recorded as the admin in `groups.txt`.

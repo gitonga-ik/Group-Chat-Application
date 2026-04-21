@@ -43,7 +43,7 @@ Most files are managed via `file_io.c`, which automatically calculates a line-ba
 
 | File | Format | Source | Destination |
 | :--- | :--- | :--- | :--- |
-| `users.txt` | `ID | Username | HashedPassword` | `registration.c` | `authentication.c` |
+| `users.txt` | `ID | Username | HashedPassword (Decimal)` | `registration.c` | `authentication.c` |
 | `groups.txt` | `ID | AdminUsername | GroupName` | `registration.c` | `group_interaction.c` |
 | `memberships.txt` | `ID | Username | GroupName` | `group_interaction.c` | `group_interaction.c` |
 
@@ -62,7 +62,7 @@ The `messages.txt` file uses a custom schema managed directly in `messaging.c`.
 ## 3. Security & Logic
 
 ### 3.1 Authentication
-Passwords are never stored in plain text. They are hashed using the **djb2** algorithm (found in `registration.c`).
+Passwords are never stored in plain text. They are hashed using the **djb2** algorithm (found in `registration.c`) and stored in **decimal** format (`%lu`).
 
 ### 3.2 Authorization
 - **Admins:** The user who creates a group is recorded as the admin in `groups.txt`.
