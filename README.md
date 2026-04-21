@@ -28,6 +28,18 @@ An iterative, connection-oriented version using **TCP sockets**. The server hand
 ### V4: Iterative UDP Server
 The connectionless counterpart to V3, utilizing **UDP datagrams**. It follows an iterative model where the server processes individual datagrams, demonstrating a lightweight but less reliable communication alternative.
 
+### V5: Multi-threaded TCP Server (Networked)
+An enhanced TCP version that supports multiple concurrent clients using **pthreads**. Unlike V2, it binds to all available network interfaces (`INADDR_ANY`), making it accessible across a network.
+
+### V6: Multi-process TCP Server
+A concurrent TCP server that uses the **process-per-client** model. Each incoming connection is handled by a separate child process created via `fork()`, ensuring strong isolation between client sessions.
+
+### V7: Multi-process UDP Server
+The connectionless equivalent of V6, implementing a **process-per-request** model for UDP. Each incoming datagram is handed off to a new child process for processing and response.
+
+### V8: Multi-threaded UDP Server
+A concurrent UDP server that uses a **thread-per-request** approach. It leverages `pthreads` to handle individual datagrams asynchronously, combining the lightweight nature of UDP with the efficiency of multi-threading.
+
 ---
 
 ## Technical Stack
